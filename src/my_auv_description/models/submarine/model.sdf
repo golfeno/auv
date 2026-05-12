@@ -1,0 +1,570 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="submarine">
+    <pose>0 0 0 1.5707963267948966 1.5707963267948966 0</pose>
+
+    <!-- ========== КОРПУС (масштаб 1/6) ========== -->
+    <link name="body">
+    <!-- Датчики, прикреплённые к корпусу -->
+      <pose>0 0 0 0 1.5707963267948966 0</pose>
+      <inertial>
+        <pose>0 0 -0.0001 0 0 0</pose>
+        <mass>115.6</mass>   <!-- 25073.7 / 216 -->
+        <inertia>
+            <ixx>18.0</ixx> <iyy>18.0</iyy> <izz>1.61</izz>
+            <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+
+      <visual name="body_visual">
+        <geometry><cylinder><radius>0.1666667</radius><length>1.3333333</length></cylinder></geometry>
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.2 0.5 0.8 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+      <collision name="body_collision">
+        <geometry><cylinder><radius>0.1666667</radius><length>1.3333333</length></cylinder></geometry>
+      </collision>
+
+      <sensor name="imu_sensor" type="imu">
+        <always_on>1</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <topic>/model/submarine/imu</topic>
+      </sensor>
+
+      <sensor name="gps_sensor" type="navsat">
+        <always_on>1</always_on>
+        <update_rate>5</update_rate>
+        <topic>/model/submarine/gps</topic>
+      </sensor>
+
+      <sensor name="pressure_sensor" type="air_pressure">
+        <always_on>1</always_on>
+        <update_rate>50</update_rate>
+        <topic>/model/submarine/pressure</topic>
+      </sensor>
+
+      <sensor name="magnetometer_sensor" type="magnetometer">
+        <always_on>1</always_on>
+        <update_rate>50</update_rate>
+        <topic>/model/submarine/magnetometer</topic>
+      </sensor>
+
+      <sensor name="lidar_sensor" type="ray">
+        <always_on>1</always_on>
+        <update_rate>20</update_rate>
+        <topic>/model/submarine/lidar</topic>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>10.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+      </sensor>
+
+    </link>
+
+
+
+       <!-- ========== ЛЕВЫЙ ПРОПЕЛЛЕР (упрощённый, лопасти ориентированы правильно) ========== -->
+    <link name="left_propeller">
+      <pose>-0.1 0.2833333 0 0 1.5708 0</pose>   <!-- сдвинут вперёд по X, повёрнут pitch 90° -->
+      <inertial>
+        <mass>0.101</mass>
+        <inertia>
+          <ixx>0.0000592</ixx> <iyy>0.0000592</iyy> <izz>0.000117</izz>
+          <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <!-- Центральная ось (цилиндр) -->
+      <visual name="left_propeller_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry><cylinder><radius>0.0333</radius><length>0.03</length></cylinder></geometry>
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.2 0.5 0.8 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+
+      <!-- Лопасть 1 (вперёд) -->
+      <visual name="left_blade1_visual">
+        <pose>0.057 0 0 -0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="left_blade1_collision">
+        <pose>0.057 0 0 -0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+      </collision>
+
+      <!-- Лопасть 2 (назад) -->
+      <visual name="left_blade2_visual">
+        <pose>-0.057 0 0 0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="left_blade2_collision">
+        <pose>-0.057 0 0 0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+      </collision>
+
+      <!-- Лопасть 3 (вверх) -->
+      <visual name="left_blade3_visual">
+        <pose>0 0.057 0 0  -0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="left_blade3_collision">
+        <pose>0 0.057 0 0 -0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+      </collision>
+
+      <!-- Лопасть 4 (вниз) -->
+      <visual name="left_blade4_visual">
+        <pose>0 -0.057 0 0 0 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="left_blade4_collision">
+        <pose>0 -0.057 0 0 0 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- ========== ПРАВЫЙ ПРОПЕЛЛЕР (упрощённый, симметрично) ========== -->
+    <link name="right_propeller">
+      <pose>-0.1 -0.2833333 0 0 1.5708 0</pose>
+      <inertial>
+        <mass>0.101</mass>
+        <inertia>
+          <ixx>0.0000592</ixx> <iyy>0.0000592</iyy> <izz>0.000117</izz>
+          <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="right_propeller_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry><cylinder><radius>0.0333</radius><length>0.03</length></cylinder></geometry>
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.2 0.5 0.8 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+
+      <visual name="right_blade1_visual">
+        <pose>0.057 0 0 -0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="right_blade1_collision">
+        <pose>0.057 0 0 -0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+      </collision>
+      <visual name="right_blade2_visual">
+        <pose>-0.057 0 0 0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="right_blade2_collision">
+        <pose>-0.057 0 0 0.349066 0 0</pose>
+        <geometry><box><size>0.1 0.05 0.01</size></box></geometry>
+      </collision>
+      <visual name="right_blade3_visual">
+        <pose>0 0.057 0 0  -0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="right_blade3_collision">
+        <pose>0 0.057 0 0  -0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+      </collision>
+      <visual name="right_blade4_visual">
+        <pose>0 -0.057 0 0 0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+        <material><ambient>0.8 0.8 0.8 1</ambient></material>
+      </visual>
+      <collision name="right_blade4_collision">
+        <pose>0 -0.057 0 0 0.349066 0</pose>
+        <geometry><box><size>0.05 0.1 0.01</size></box></geometry>
+      </collision>
+    </link>
+
+    <!-- ========== СОЕДИНЕНИЯ (JOINTS) ========== -->
+
+    <joint name="right_propeller_joint" type="revolute">
+      <parent>body</parent>
+      <child>right_propeller</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+        <limit><lower>-1e12</lower><upper>1e12</upper></limit>
+        <dynamics>
+          <damping>0.5</damping>          <!-- вязкое трение -->
+          <spring_reference>0.0</spring_reference>
+          <spring_stiffness>0.0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <joint name="left_propeller_joint" type="revolute">
+      <parent>body</parent>
+      <child>left_propeller</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <use_parent_model_frame>1</use_parent_model_frame>
+        <limit><lower>-1e12</lower><upper>1e12</upper></limit>
+        <dynamics>
+          <damping>0.5</damping>          <!-- вязкое трение -->
+          <spring_reference>0.0</spring_reference>
+          <spring_stiffness>0.0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- ========== ПЛАГИНЫ APPLY JOINT FORCE ========== -->
+    <plugin filename="gz-sim-apply-joint-force-system" name="gz::sim::systems::ApplyJointForce">
+      <joint_name>left_propeller_joint</joint_name>
+    </plugin>
+    <plugin filename="gz-sim-apply-joint-force-system" name="gz::sim::systems::ApplyJointForce">
+      <joint_name>right_propeller_joint</joint_name>
+    </plugin>
+
+    <!-- ========== ПЛАГИНЫ LIFTDRAG ДЛЯ ЛОПАСТЕЙ (8 штук) ========== -->
+    <!-- Левый винт, лопасть 1 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>   <!-- 0.27637 / 36 -->
+      <upward>0 -0.7071067811865476 -0.7071067811865475</upward>
+      <forward>0 -0.7071067811865475 0.7071067811865476</forward>
+      <link_name>left_propeller</link_name>
+      <cp>0.05833 0 0</cp>     <!-- 0.35 / 6 -->
+    </plugin>
+    <!-- Левый винт, лопасть 2 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>-0.7071067811865475 0 -0.7071067811865476</upward>
+      <forward>-0.7071067811865476 0 0.7071067811865475</forward>
+      <link_name>left_propeller</link_name>
+      <cp>0 -0.05833 0</cp>
+    </plugin>
+    <!-- Левый винт, лопасть 3 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>0 0.7071067811865475 -0.7071067811865476</upward>
+      <forward>0 -0.7071067811865476 -0.7071067811865475</forward>
+      <link_name>left_propeller</link_name>
+      <cp>-0.05833 0 0</cp>
+    </plugin>
+    <!-- Левый винт, лопасть 4 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>0.7071067811865476 0 -0.7071067811865475</upward>
+      <forward>0.7071067811865475 0 0.7071067811865476</forward>
+      <link_name>left_propeller</link_name>
+      <cp>0 0.05833 0</cp>
+    </plugin>
+    <!-- Правый винт, лопасть 1 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>0 -0.7071067811865476 -0.7071067811865475</upward>
+      <forward>0 -0.7071067811865475 0.7071067811865476</forward>
+      <link_name>right_propeller</link_name>
+      <cp>0.05833 0 0</cp>
+    </plugin>
+    <!-- Правый винт, лопасть 2 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>-0.7071067811865475 0 -0.7071067811865476</upward>
+      <forward>-0.7071067811865476 0 0.7071067811865475</forward>
+      <link_name>right_propeller</link_name>
+      <cp>0 -0.05833 0</cp>
+    </plugin>
+    <!-- Правый винт, лопасть 3 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>0 0.7071067811865475 -0.7071067811865476</upward>
+      <forward>0 -0.7071067811865476 -0.7071067811865475</forward>
+      <link_name>right_propeller</link_name>
+      <cp>-0.05833 0 0</cp>
+    </plugin>
+    <!-- Правый винт, лопасть 4 -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>1.2535816618911175</cla> <cla_stall>-1.4326647564469914</cla_stall>
+      <cda>0</cda> <cda_stall>1.4326647564469914</cda_stall>
+      <alpha_stall>1.396</alpha_stall> <a0>0</a0>
+      <area>0.007677</area>
+      <upward>0.7071067811865476 0 -0.7071067811865475</upward>
+      <forward>0.7071067811865475 0 0.7071067811865476</forward>
+      <link_name>right_propeller</link_name>
+      <cp>0 0.05833 0</cp>
+    </plugin>
+
+    <!-- ========== ГОРИЗОНТАЛЬНЫЕ РУЛИ (масштабированы) ========== -->
+    <!-- Правый горизонтальный руль -->
+    <link name="horizontal_rudder_right">
+      <pose>-0.6666667 0.2833333 0 1.5708 0 1.5708</pose>   <!-- (-4)/6 = -0.6667, 1.7/6=0.2833 -->
+      <inertial>
+        <mass>0.02315</mass>   <!-- 5 / 216 -->
+        <inertia>
+          <ixx>0.00000129</ixx> <iyy>0.00000129</iyy> <izz>0.00000129</izz> <!-- 0.01/7776 ≈ 1.286e-6 -->
+          <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="horizontal_rudder_right_visual">
+        <geometry><box><size>0.1666667 0.0083333 0.0833333</size></box></geometry> <!-- 1/6, 0.05/6, 0.5/6 -->
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.2 0.5 0.8 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+      <collision name="horizontal_rudder_right_collision">
+        <geometry><box><size>0.05 0.0083333 0.0833333</size></box></geometry> <!-- 0.3/6=0.05 -->
+      </collision>
+    </link>
+    <joint name="horizontal_rudder_right_joint" type="revolute">
+      <parent>body</parent>
+      <child>horizontal_rudder_right</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit><lower>-0.785</lower><upper>0.785</upper><effort>10</effort><velocity>1.0</velocity></limit>
+        <dynamics><damping>10</damping></dynamics>
+      </axis>
+    </joint>
+
+    <!-- Левый горизонтальный руль -->
+    <link name="horizontal_rudder_left">
+      <pose>-0.6666667 -0.2833333 0 1.5708 0 1.5708</pose>
+      <inertial>
+        <mass>0.02315</mass>
+        <inertia>
+          <ixx>0.00000129</ixx> <iyy>0.00000129</iyy> <izz>0.00000129</izz>
+          <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="horizontal_rudder_left_visual">
+        <geometry><box><size>0.1666667 0.0083333 0.0833333</size></box></geometry>
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.5 0.9 0.2 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+      <collision name="horizontal_rudder_left_collision">
+        <geometry><box><size>0.05 0.0083333 0.0833333</size></box></geometry>
+      </collision>
+    </link>
+    <joint name="horizontal_rudder_left_joint" type="revolute">
+      <parent>body</parent>
+      <child>horizontal_rudder_left</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit><lower>-0.785</lower><upper>0.785</upper><effort>10</effort><velocity>1.0</velocity></limit>
+        <dynamics><damping>10</damping></dynamics>
+      </axis>
+    </joint>
+
+    <!-- Плагины управления горизонтальными рулями (разные топики) -->
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>horizontal_rudder_right_joint</joint_name>
+      <topic>/model/submarine/joint/horizontal_rudder_right/cmd_position</topic>
+      <p_gain>10</p_gain>
+    </plugin>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>horizontal_rudder_left_joint</joint_name>
+      <topic>/model/submarine/joint/horizontal_rudder_left/cmd_position</topic>
+      <p_gain>10</p_gain>
+    </plugin>
+
+    <!-- ========== ВЕРТИКАЛЬНЫЙ РУЛЬ ========== -->
+    <link name="vertical_rudder">
+      <pose>-0.6666667 0 -0.2833333 1.5708 1.5708 0</pose> <!-- (-4)/6, (-1.7)/6 = -0.28333 -->
+      <inertial>
+        <mass>0.02315</mass>
+        <inertia>
+          <ixx>0.00000129</ixx> <iyy>0.00000129</iyy> <izz>0.00000129</izz>
+          <ixy>0</ixy> <ixz>0</ixz> <iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="vertical_rudder_visual">
+        <geometry><box><size>0.1666667 0.1666667 0.005</size></box></geometry> <!-- 1/6, 1/6, 0.03/6=0.005 -->
+        <material><ambient>0.2 0.5 0.8 1</ambient><diffuse>0.2 0.5 0.8 1</diffuse><specular>0.2 0.5 0.8 1</specular></material>
+      </visual>
+      <collision name="vertical_rudder_collision">
+        <geometry><box><size>0.0333333 0.0666667 0.005</size></box></geometry> <!-- 0.2/6, 0.4/6, 0.03/6 -->
+      </collision>
+    </link>
+    <joint name="vertical_rudder_joint" type="revolute">
+      <parent>body</parent>
+      <child>vertical_rudder</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit><lower>-0.785</lower><upper>0.785</upper><effort>10</effort><velocity>1.0</velocity></limit>
+        <dynamics><damping>10</damping></dynamics>
+      </axis>
+    </joint>
+    <plugin filename="gz-sim-joint-position-controller-system" name="gz::sim::systems::JointPositionController">
+      <joint_name>vertical_rudder_joint</joint_name>
+      <topic>/model/submarine/joint/vertical_rudder/cmd_position</topic>
+      <p_gain>10</p_gain>
+    </plugin>
+
+    <!-- ========== ГИДРОДИНАМИКА РУЛЕЙ (LiftDrag) ========== -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <link_name>vertical_rudder</link_name>
+      <area>0.01</area>   <!-- 0.08 / 36 -->
+      <cla>1.2</cla> <cla_stall>-0.2</cla_stall>
+      <cda>0.5</cda> <cda_stall>1.5</cda_stall>
+      <alpha_stall>1.2</alpha_stall> <a0>0</a0>
+      <upward>0 0 1</upward>
+      <forward>0 1 0</forward>
+      <cp>-0.6666667 0 -0.2833333</cp>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <link_name>horizontal_rudder_right</link_name>
+      <area>0.01</area>  <!-- 0.15 / 36 -->
+      <cla>1.2</cla> <cla_stall>-0.2</cla_stall>
+      <cda>0.5</cda> <cda_stall>1.5</cda_stall>
+      <alpha_stall>1.2</alpha_stall> <a0>0</a0>
+      <upward>0 1 0</upward>
+      <forward>0 0 1</forward>
+      <cp>-0.6666667 0.2833333 0 </cp>
+    </plugin>
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <link_name>horizontal_rudder_left</link_name>
+      <area>0.01</area>
+      <cla>1.2</cla> <cla_stall>-0.2</cla_stall>
+      <cda>0.5</cda> <cda_stall>1.5</cda_stall>
+      <alpha_stall>1.2</alpha_stall> <a0>0</a0>
+      <upward>0 1 0</upward>
+      <forward>0 0 1</forward>
+      <cp>-0.6666667 -0.2833333 0 </cp>
+    </plugin>
+
+     <!-- ========== ПЛАГИН ОДОМЕТРИИ ========== -->
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <dimensions>3</dimensions>
+      <topic>/model/submarine/odometry</topic>
+      <odom_frame>world</odom_frame>
+      <robot_base_frame>submarine/body</robot_base_frame>
+    </plugin>
+
+
+      <!-- ПЛАГИН ПЛАВУЧЕСТИ УДАЛЁН – ОН ДОЛЖЕН БЫТЬ В МИРЕ -->
+
+
+
+
+    <!-- Балластные баки -->
+    <link name="ballast_fl">
+      <pose>0.45 0 -0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ballast_fl_visual">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        <material><ambient>0.8 0.2 0.2 1</ambient></material>
+      </visual>
+      <collision name="ballast_fl_collision">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+      </collision>
+    </link>
+    <joint name="ballast_fl_joint" type="fixed">
+      <parent>body</parent>
+      <child>ballast_fl</child>
+    </joint>
+
+    <link name="ballast_fr">
+      <pose>0.25 0 -0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.27</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ballast_fr_visual">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        <material><ambient>0.8 0.2 0.2 1</ambient></material>
+      </visual>
+      <collision name="ballast_fr_collision">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+      </collision>
+    </link>
+    <joint name="ballast_fr_joint" type="fixed">
+      <parent>body</parent>
+      <child>ballast_fr</child>
+    </joint>
+
+    <link name="ballast_rl">
+      <pose>-0.25 0 -0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ballast_rl_visual">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        <material><ambient>0.8 0.2 0.2 1</ambient></material>
+      </visual>
+      <collision name="ballast_rl_collision">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+      </collision>
+    </link>
+    <joint name="ballast_rl_joint" type="fixed">
+      <parent>body</parent>
+      <child>ballast_rl</child>
+    </joint>
+
+    <link name="ballast_rr">
+      <pose>-0.45 0 -0.2 0 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <visual name="ballast_rr_visual">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+        <material><ambient>0.8 0.2 0.2 1</ambient></material>
+      </visual>
+      <collision name="ballast_rr_collision">
+        <geometry><box><size>0.01 0.01 0.01</size></box></geometry>
+      </collision>
+    </link>
+    <joint name="ballast_rr_joint" type="fixed">
+      <parent>body</parent>
+      <child>ballast_rr</child>
+    </joint>
+  </model>
+</sdf>

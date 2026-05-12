@@ -1,0 +1,309 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="static_world">
+    <physics name="default" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-buoyancy-system" name="gz::sim::systems::Buoyancy">
+      <uniform_fluid_density>1000</uniform_fluid_density>
+    </plugin>
+
+    <plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
+
+    <light type="directional" name="sun">
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>0.5 0.5 0.5 1</specular>
+      <attenuation><range>1000</range><constant>0.9</constant><linear>0.01</linear><quadratic>0.001</quadratic></attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Дно (плоскость) -->
+    <model name="ground_plane">
+    <pose>0 0 -50 0 0 0</pose>
+      <static>true</static>
+      <link name="ground_link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry>
+          <material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.3 0.3 0.3 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- 50 статических объектов (разные формы, размеры, расположены случайно в пределах -200..200 по X,Y, на глубине -19..-18) -->
+    <!-- Объект 1: большой куб -->
+    <model name="obj_01">
+      <static>true</static>
+      <pose>-150.2 80.5 -19.2 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>2.0 2.0 2.0</size></box></geometry><material><ambient>0.8 0.2 0.2 1</ambient></material></visual><collision name="collision"><geometry><box><size>2.0 2.0 2.0</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 2: сфера -->
+    <model name="obj_02">
+      <static>true</static>
+      <pose>-120.5 -90.3 -19.5 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>1.5</radius></sphere></geometry><material><ambient>0.2 0.8 0.2 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.5</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 3: цилиндр -->
+    <model name="obj_03">
+      <static>true</static>
+      <pose>180.2 40.1 -19.0 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>1.0</radius><length>2.5</length></cylinder></geometry><material><ambient>0.2 0.2 0.8 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.0</radius><length>2.5</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 4: плоский куб -->
+    <model name="obj_04">
+      <static>true</static>
+      <pose>-50.0 -150.2 -19.3 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>3.0 3.0 0.5</size></box></geometry><material><ambient>0.8 0.8 0.2 1</ambient></material></visual><collision name="collision"><geometry><box><size>3.0 3.0 0.5</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 5: тонкий цилиндр (столб) -->
+    <model name="obj_05">
+      <static>true</static>
+      <pose>70.3 120.4 -18.8 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.3</radius><length>3.0</length></cylinder></geometry><material><ambient>0.8 0.5 0.1 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.3</radius><length>3.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 6: большой шар -->
+    <model name="obj_06">
+      <static>true</static>
+      <pose>-180.0 -50.6 -19.7 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>2.0</radius></sphere></geometry><material><ambient>0.6 0.3 0.9 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>2.0</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 7: длинный куб -->
+    <model name="obj_07">
+      <static>true</static>
+      <pose>90.8 -110.2 -19.4 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>4.0 1.0 1.0</size></box></geometry><material><ambient>0.1 0.6 0.6 1</ambient></material></visual><collision name="collision"><geometry><box><size>4.0 1.0 1.0</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 8: низкий цилиндр -->
+    <model name="obj_08">
+      <static>true</static>
+      <pose>-30.4 200.0 -19.1 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>1.2</radius><length>0.8</length></cylinder></geometry><material><ambient>0.9 0.4 0.4 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.2</radius><length>0.8</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 9: куб-стена -->
+    <model name="obj_09">
+      <static>true</static>
+      <pose>150.7 -30.2 -19.2 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.5 5.0 2.0</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual><collision name="collision"><geometry><box><size>0.5 5.0 2.0</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 10: маленькая сфера -->
+    <model name="obj_10">
+      <static>true</static>
+      <pose>-200.5 15.9 -19.6 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>0.5</radius></sphere></geometry><material><ambient>0.2 0.9 0.9 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>0.5</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 11: куб -->
+    <model name="obj_11">
+      <static>true</static>
+      <pose>60.0 160.0 -19.3 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>1.8 1.8 1.8</size></box></geometry><material><ambient>0.9 0.6 0.1 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.8 1.8 1.8</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 12: цилиндр -->
+    <model name="obj_12">
+      <static>true</static>
+      <pose>-100.5 -140.2 -19.0 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.9</radius><length>2.0</length></cylinder></geometry><material><ambient>0.3 0.7 0.2 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.9</radius><length>2.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 13: сфера -->
+    <model name="obj_13">
+      <static>true</static>
+      <pose>210.3 70.4 -19.8 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>1.2</radius></sphere></geometry><material><ambient>0.6 0.2 0.6 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.2</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 14: плоский куб (платформа) -->
+    <model name="obj_14">
+      <static>true</static>
+      <pose>-40.0 -40.0 -19.1 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>4.0 4.0 0.4</size></box></geometry><material><ambient>0.9 0.9 0.9 1</ambient></material></visual><collision name="collision"><geometry><box><size>4.0 4.0 0.4</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 15: высокий цилиндр -->
+    <model name="obj_15">
+      <static>true</static>
+      <pose>40.6 -210.3 -18.5 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.4</radius><length>4.0</length></cylinder></geometry><material><ambient>0.1 0.8 0.1 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.4</radius><length>4.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 16: куб -->
+    <model name="obj_16">
+      <static>true</static>
+      <pose>-210.0 110.2 -19.4 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>2.2 2.2 2.2</size></box></geometry><material><ambient>0.5 0.5 0.0 1</ambient></material></visual><collision name="collision"><geometry><box><size>2.2 2.2 2.2</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 17: сфера -->
+    <model name="obj_17">
+      <static>true</static>
+      <pose>130.0 -150.5 -19.5 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>0.9</radius></sphere></geometry><material><ambient>0.8 0.8 0.2 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>0.9</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 18: цилиндр -->
+    <model name="obj_18">
+      <static>true</static>
+      <pose>-75.3 190.8 -19.2 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.7</radius><length>1.5</length></cylinder></geometry><material><ambient>0.4 0.4 0.8 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.7</radius><length>1.5</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 19: длинный брус -->
+    <model name="obj_19">
+      <static>true</static>
+      <pose>190.2 10.5 -19.3 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>5.0 0.5 0.5</size></box></geometry><material><ambient>0.2 0.8 0.8 1</ambient></material></visual><collision name="collision"><geometry><box><size>5.0 0.5 0.5</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 20: куб -->
+    <model name="obj_20">
+      <static>true</static>
+      <pose>-10.5 260.0 -19.0 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>1.5 1.5 1.5</size></box></geometry><material><ambient>0.7 0.2 0.2 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.5 1.5 1.5</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 21: сфера -->
+    <model name="obj_21">
+      <static>true</static>
+      <pose>-130.4 -200.7 -19.7 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>1.8</radius></sphere></geometry><material><ambient>0.9 0.5 0.0 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.8</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 22: цилиндр -->
+    <model name="obj_22">
+      <static>true</static>
+      <pose>250.0 60.8 -19.1 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>1.1</radius><length>2.2</length></cylinder></geometry><material><ambient>0.1 0.4 0.9 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.1</radius><length>2.2</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 23: тонкая пластина -->
+    <model name="obj_23">
+      <static>true</static>
+      <pose>-220.0 -30.9 -19.2 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.2 0.2 0.2</size></box></geometry><material><ambient>0.8 0.8 0.8 1</ambient></material></visual><collision name="collision"><geometry><box><size>4.0 0.2 4.0</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 24: куб -->
+    <model name="obj_24">
+      <static>true</static>
+      <pose>80.9 230.1 -19.4 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>2.5 2.5 2.5</size></box></geometry><material><ambient>0.2 0.2 0.2 1</ambient></material></visual><collision name="collision"><geometry><box><size>2.5 2.5 2.5</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 25: сфера -->
+    <model name="obj_25">
+      <static>true</static>
+      <pose>-60.3 -260.4 -19.6 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>1.4</radius></sphere></geometry><material><ambient>0.3 0.9 0.3 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.4</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 26: цилиндр -->
+    <model name="obj_26">
+      <static>true</static>
+      <pose>320.5 45.2 -19.0 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.6</radius><length>3.0</length></cylinder></geometry><material><ambient>0.6 0.6 0.2 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.6</radius><length>3.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 27: куб (столб) -->
+    <model name="obj_27">
+      <static>true</static>
+      <pose>-170.5 210.0 -18.8 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>0.8 0.8 3.5</size></box></geometry><material><ambient>0.9 0.3 0.9 1</ambient></material></visual><collision name="collision"><geometry><box><size>0.8 0.8 3.5</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 28: сфера -->
+    <model name="obj_28">
+      <static>true</static>
+      <pose>-40.5 300.0 -19.3 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>0.7</radius></sphere></geometry><material><ambient>0.9 0.9 0.1 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>0.7</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 29: цилиндр -->
+    <model name="obj_29">
+      <static>true</static>
+      <pose>150.6 -180.3 -19.5 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>1.3</radius><length>1.0</length></cylinder></geometry><material><ambient>0.1 0.9 0.5 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.3</radius><length>1.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 30: куб-->
+    <model name="obj_30">
+      <static>true</static>
+      <pose>280.0 -150.0 -19.2 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>1.2 1.2 1.2</size></box></geometry><material><ambient>0.4 0.4 0.9 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.2 1.2 1.2</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 31: сфера -->
+    <model name="obj_31">
+      <static>true</static>
+      <pose>-300.0 80.4 -19.6 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>2.2</radius></sphere></geometry><material><ambient>0.8 0.4 0.0 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>2.2</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 32: цилиндр -->
+    <model name="obj_32">
+      <static>true</static>
+      <pose>-20.5 -300.0 -19.1 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.5</radius><length>2.8</length></cylinder></geometry><material><ambient>0.2 0.5 0.8 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.5</radius><length>2.8</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Объект 33: куб -->
+    <model name="obj_33">
+      <static>true</static>
+      <pose>350.0 120.0 -19.0 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><box><size>1.8 1.8 1.8</size></box></geometry><material><ambient>0.3 0.9 0.6 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.8 1.8 1.8</size></box></geometry></collision></link>
+    </model>
+
+    <!-- Объект 34: сфера -->
+    <model name="obj_34">
+      <static>true</static>
+      <pose>-280.0 -200.0 -19.8 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><sphere><radius>1.1</radius></sphere></geometry><material><ambient>0.1 0.1 0.9 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.1</radius></sphere></geometry></collision></link>
+    </model>
+
+    <!-- Объект 35: цилиндр -->
+    <model name="obj_35">
+      <static>true</static>
+      <pose>100.0 -250.0 -19.3 0 0 0</pose>
+      <link name="link"><visual name="visual"><geometry><cylinder><radius>0.8</radius><length>2.0</length></cylinder></geometry><material><ambient>0.9 0.1 0.9 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.8</radius><length>2.0</length></cylinder></geometry></collision></link>
+    </model>
+
+    <!-- Остальные 15 объектов (36-50) – различной формы, для краткости я добавлю их с минимальными описаниями, но они будут статичны -->
+    <!-- Объект 36: большой куб -->
+    <model name="obj_36"><static>true</static><pose>400.0 -50.0 -19.4 0 0 0</pose><link name="link"><visual name="visual"><geometry><box><size>3.0 3.0 3.0</size></box></geometry><material><ambient>0.5 0.5 0.5 1</ambient></material></visual><collision name="collision"><geometry><box><size>3.0 3.0 3.0</size></box></geometry></collision></link></model>
+    <model name="obj_37"><static>true</static><pose>-350.0 150.0 -19.5 0 0 0</pose><link name="link"><visual name="visual"><geometry><sphere><radius>1.0</radius></sphere></geometry><material><ambient>0.9 0.2 0.2 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.0</radius></sphere></geometry></collision></link></model>
+    <model name="obj_38"><static>true</static><pose>250.0 -300.0 -19.0 0 0 0</pose><link name="link"><visual name="visual"><geometry><cylinder><radius>1.5</radius><length>1.5</length></cylinder></geometry><material><ambient>0.2 0.9 0.2 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.5</radius><length>1.5</length></cylinder></geometry></collision></link></model>
+    <model name="obj_39"><static>true</static><pose>-50.0 400.0 -19.2 0 0 0</pose><link name="link"><visual name="visual"><geometry><box><size>2.5 0.8 2.5</size></box></geometry><material><ambient>0.8 0.8 0.0 1</ambient></material></visual><collision name="collision"><geometry><box><size>2.5 0.8 2.5</size></box></geometry></collision></link></model>
+    <model name="obj_40"><static>true</static><pose>300.0 300.0 -19.7 0 0 0</pose><link name="link"><visual name="visual"><geometry><sphere><radius>1.6</radius></sphere></geometry><material><ambient>0.0 0.6 0.6 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.6</radius></sphere></geometry></collision></link></model>
+    <model name="obj_41"><static>true</static><pose>-400.0 -100.0 -19.3 0 0 0</pose><link name="link"><visual name="visual"><geometry><cylinder><radius>0.4</radius><length>3.5</length></cylinder></geometry><material><ambient>0.5 0.2 0.8 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.4</radius><length>3.5</length></cylinder></geometry></collision></link></model>
+    <model name="obj_42"><static>true</static><pose>0.0 -400.0 -19.1 0 0 0</pose><link name="link"><visual name="visual"><geometry><box><size>1.0 4.0 1.0</size></box></geometry><material><ambient>0.7 0.7 0.8 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.0 4.0 1.0</size></box></geometry></collision></link></model>
+    <model name="obj_43"><static>true</static><pose>450.0 0.0 -19.4 0 0 0</pose><link name="link"><visual name="visual"><geometry><sphere><radius>0.6</radius></sphere></geometry><material><ambient>0.9 0.5 0.2 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>0.6</radius></sphere></geometry></collision></link></model>
+    <model name="obj_44"><static>true</static><pose>-200.0 -350.0 -19.5 0 0 0</pose><link name="link"><visual name="visual"><geometry><cylinder><radius>0.7</radius><length>2.2</length></cylinder></geometry><material><ambient>0.3 0.6 0.9 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.7</radius><length>2.2</length></cylinder></geometry></collision></link></model>
+    <model name="obj_45"><static>true</static><pose>350.0 -350.0 -19.6 0 0 0</pose><link name="link"><visual name="visual"><geometry><box><size>2.0 2.0 0.5</size></box></geometry><material><ambient>0.4 0.9 0.4 1</ambient></material></visual><collision name="collision"><geometry><box><size>2.0 2.0 0.5</size></box></geometry></collision></link></model>
+    <model name="obj_46"><static>true</static><pose>-350.0 350.0 -19.0 0 0 0</pose><link name="link"><visual name="visual"><geometry><sphere><radius>1.3</radius></sphere></geometry><material><ambient>0.6 0.4 0.2 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>1.3</radius></sphere></geometry></collision></link></model>
+    <model name="obj_47"><static>true</static><pose>100.0 450.0 -19.2 0 0 0</pose><link name="link"><visual name="visual"><geometry><cylinder><radius>0.9</radius><length>1.0</length></cylinder></geometry><material><ambient>0.9 0.1 0.6 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>0.9</radius><length>1.0</length></cylinder></geometry></collision></link></model>
+    <model name="obj_48"><static>true</static><pose>-450.0 -50.0 -19.3 0 0 0</pose><link name="link"><visual name="visual"><geometry><box><size>1.5 1.5 1.5</size></box></geometry><material><ambient>0.1 0.9 0.9 1</ambient></material></visual><collision name="collision"><geometry><box><size>1.5 1.5 1.5</size></box></geometry></collision></link></model>
+    <model name="obj_49"><static>true</static><pose>200.0 -450.0 -19.4 0 0 0</pose><link name="link"><visual name="visual"><geometry><sphere><radius>0.8</radius></sphere></geometry><material><ambient>0.9 0.3 0.3 1</ambient></material></visual><collision name="collision"><geometry><sphere><radius>0.8</radius></sphere></geometry></collision></link></model>
+    <model name="obj_50"><static>true</static><pose>-150.0 450.0 -19.5 0 0 0</pose><link name="link"><visual name="visual"><geometry><cylinder><radius>1.0</radius><length>1.8</length></cylinder></geometry><material><ambient>0.3 0.3 0.9 1</ambient></material></visual><collision name="collision"><geometry><cylinder><radius>1.0</radius><length>1.8</length></cylinder></geometry></collision></link></model>
+
+  </world>
+</sdf>
+<plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
+<plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
+<plugin filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
