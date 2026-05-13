@@ -1,47 +1,22 @@
-# Compiled files
+# ROS 2 build artifacts
 build/
 install/
 log/
-*.pyc
+*.bag
+*.bag.*
+
+# Python
 __pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+.eggs/
 
-# Backup files
-*~
-*.bak
-*.orig
-*.backup*
-*.sdf.backup*
-
-# VS Code / IDE
+# IDE & OS
 .vscode/
 .idea/
-
-# ROS logs
-.ros/
-
-# Temporary files
-*.tmp
+.DS_Store
+Thumbs.db
 *.swp
-
-# Specific backups we created earlier
-model.sdf.backup*
-model_fast.sdf
-ballast_control.py
-test_ballast.py
-independent_ballast.py
-
-# Old world files (only keep static_world.sdf)
-buoyancy_only_world.sdf
-buoyancy.sdf
-underwater_world.sdf
-random_world.sdf
-
-# Old launch files (if any)
-auv_teleop.launch.py
-bridge.launch.py
-
-# Any old or test scripts in home (if copied)
-/dual_turn_control.py
-/ballast_control.py
-/roll_stabilizer.py
-/pitch_stabilizer_old.py
+*.swo

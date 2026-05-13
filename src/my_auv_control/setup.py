@@ -23,6 +23,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'auv_telemetry = my_auv_control.auv_telemetry:main',
+            'auv_control_mixer = my_auv_control.auv_control_mixer:main',
+            'keyboard_teleop = my_auv_control.keyboard_teleop:main',
             'dual_turn_control = my_auv_control.dual_turn_control:main',
             'pitch_stabilizer = my_auv_control.pitch_stabilizer:main',
         ],

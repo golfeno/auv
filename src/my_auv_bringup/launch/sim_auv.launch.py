@@ -27,6 +27,7 @@ def generate_launch_description():
    	 package='ros_gz_sim',
     	executable='create',
     	arguments=[
+            '/model/submarine/odometry@nav_msgs/msg/Odometry@gz.msgs.Odometry',
         	'-world', 'empty',                     # Название мира Gazebo
         	'-file', urdf_file,                    # Путь к файлу вашей модели (URDF или SDF)
         	'-name', 'my_auv',                     # Имя модели в симуляции
@@ -44,7 +45,8 @@ def generate_launch_description():
     bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
-        arguments=['--config-file', bridge_config],
+        arguments=[
+            '/model/submarine/odometry@nav_msgs/msg/Odometry@gz.msgs.Odometry','--config-file', bridge_config],
         output='screen'
     )
 

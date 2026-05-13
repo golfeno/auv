@@ -24,12 +24,7 @@
         <geometry><cylinder><radius>0.1666667</radius><length>1.3333333</length></cylinder></geometry>
       </collision>
 
-      <sensor name="imu_sensor" type="imu">
-        <always_on>1</always_on>
-        <update_rate>100</update_rate>
-        <visualize>true</visualize>
-        <topic>/model/submarine/imu</topic>
-      </sensor>
+      
 
       <sensor name="gps_sensor" type="navsat">
         <always_on>1</always_on>
@@ -70,12 +65,17 @@
         </ray>
       </sensor>
 
+          <sensor name="imu_sensor" type="imu">
+        <always_on>1</always_on>
+        <update_rate>50</update_rate>
+        <topic>/model/submarine/imu</topic>
+      </sensor>
     </link>
 
 
 
        <!-- ========== ЛЕВЫЙ ПРОПЕЛЛЕР (упрощённый, лопасти ориентированы правильно) ========== -->
-    <link name="left_propeller">
+          <link name="left_propeller">
       <pose>-0.1 0.2833333 0 0 1.5708 0</pose>   <!-- сдвинут вперёд по X, повёрнут pitch 90° -->
       <inertial>
         <mass>0.101</mass>
@@ -465,12 +465,7 @@
     </plugin>
 
      <!-- ========== ПЛАГИН ОДОМЕТРИИ ========== -->
-    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
-      <odom_frame>world</odom_frame>
-      <robot_base_frame>submarine/body</robot_base_frame>
-      <odom_topic>/model/submarine/odometry</odom_topic>
-      <odom_publish_frequency>50</odom_publish_frequency>
-    </plugin>
+    
 
 
       <!-- ПЛАГИН ПЛАВУЧЕСТИ УДАЛЁН – ОН ДОЛЖЕН БЫТЬ В МИРЕ -->
@@ -566,5 +561,13 @@
       <parent>body</parent>
       <child>ballast_rr</child>
     </joint>
+      <!-- Плагин одометрии (Gazebo Harmonic Compatible) -->
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <odom_topic>/model/submarine/odometry</odom_topic>
+      <odom_frame>world</odom_frame>
+      <robot_base_frame>submarine/body</robot_base_frame>
+      <odom_publish_frequency>30</odom_publish_frequency>
+    </plugin>
+
   </model>
 </sdf>
