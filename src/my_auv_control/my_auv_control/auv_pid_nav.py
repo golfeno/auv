@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""AUV PID Autopilot v31.1 | Hydrodynamic Depth | Calibrated | Stable"""
-import rclpy, math, time
+"""AUV PID Autopilot v34.1 | Anti-Capsize System | Safe Velocity Orbit"""
+import rclpy, math, time, sys
 from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float32, Float64
@@ -9,8 +9,8 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 P_Z0 = 101325.0
 RHO_G = 9810.0
 
-# 🔥 Знак глубины: 1.0 = рули вниз для погружения. Если всплывает -> поменяй на -1.0
-DEPTH_SIGN = -1.0
+ORBIT_RADIUS = 15.0  
+PREDICTIVE_ZONE = ORBIT_RADIUS * 1.5  
 
 class AUVController(Node):
     def __init__(self):
@@ -22,55 +22,48 @@ class AUVController(Node):
         self.pub_hr = self.create_publisher(Float64, '/model/submarine/joint/horizontal_rudder_right/cmd_position', 10)
         
         self.create_subscription(Odometry, '/model/submarine/odometry', self.odom_cb, 10)
+        
         qos_s = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST)
         self.create_subscription(Float32, '/model/submarine/pressure', self.press_cb, qos_s)
 
         self.state = 'INIT'
-        self.pos = [0.0, 0.0, 0.0]; self.vel = 0.0
-        self.rpy = [0.0, 0.0, 0.0]; self.prev_rpy = [0.0, 0.0, 0.0]
-        self.start_pos = [0.0, 0.0, 0.0]
-        self.target_rel = [0.0, 0.0]
+        self.pos = [0.0, 0.0, 0.0]  
+        self.baro_z = 0.0
+        self.vel = 0.0
+        self.rpy = [0.0, 0.0, 0.0]
+        self.prev_rpy = [0.0, 0.0, 0.0]
+        self.target_global = [0.0, 0.0, 0.0]
         self.bearing = 0.0
-        self.dist_to_target = 1000.0
+        self.dist_2d = 1000.0
+        self.prev_baro_z = 0.0
         
-        # Инициализация целевых смещений (фикс AttributeError)
-        self.rel_x = 0.0; self.rel_y = 0.0; self.rel_z = 0.0
+        # Настройки маршевой скорости
+        self.max_cruise_speed = 2.2  
+        self.min_cruise_speed = 0.6  
+        self.brake_threshold = 0.2
+  
+        # ПИД Z (Задемфированный, чтобы не раскачивать нос)
+        self.Kp_z = 3.0; self.Kd_z = 1.4
         
-        self.depth = 0.0; self.use_pressure = False
-        self.target_z = 0.0
-        self.prev_depth = 0.0
-        
-        # 🌀 ПАРАМЕТРЫ
-        self.orbit_radius = 5.0
-        
-        # 🛑 СКОРОСТЬ
-        self.max_cruise_speed = 2.0
-        self.min_cruise_speed = 0.6
-        self.brake_threshold = 0.8
-        
-        # ПИД ГЛУБИНЫ
-        self.Kp_z = 4.0; self.Ki_z = 0.2; self.Kd_z = 1.5
-        self.depth_int = 0.0; self.INT_MAX_Z = 0.35
-        
-        # ПИД КУРСА
-        self.Kp_yaw = 0.8; self.Ki_yaw = 0.15; self.Kd_yaw = 0.3
-        self.K_diff = 3.0
-        self.yaw_int = 0.0; self.INT_MAX_YAW = 1.0
-        self.cte = 0.0; self.prev_cte = 0.0
-        
-        # КРЕН
-        self.Kp_roll = 6.0; self.Kd_roll = 2.0
+        # Базовый курс
+        self.Kp_yaw = 1.8; self.Kd_yaw = 0.5
+        self.K_diff_base = 3.0  # Умеренный базовый дифференциал
+
+        # 🔥 ЭКСТРЕМАЛЬНАЯ СТАБИЛИЗАЦИЯ КРЕНА (Защита от переворота)
+        self.Kp_roll = 16.0; self.Kd_roll = 5.0
         self.roll_bias = 0.04
         
         self.stable_t = 0.0; self.dt = 0.05
         self.timer = self.create_timer(self.dt, self.loop)
 
     def press_cb(self, msg):
-        self.depth = (P_Z0 - msg.data) / RHO_G
-        self.use_pressure = True
+        self.baro_z = (P_Z0 - msg.data) / RHO_G
 
     def odom_cb(self, msg):
-        self.pos = [msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z]
+        self.pos[0] = msg.pose.pose.position.x
+        self.pos[1] = msg.pose.pose.position.y
+        self.pos[2] = self.baro_z 
+        
         self.vel = msg.twist.twist.linear.x
         q = msg.pose.pose.orientation
         self.rpy[0] = math.atan2(2*(q.w*q.x + q.y*q.z), 1-2*(q.x**2 + q.y**2))
@@ -78,113 +71,147 @@ class AUVController(Node):
         self.rpy[2] = math.atan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y**2 + q.z**2))
         
         if self.state == 'INIT':
-            self.start_pos = [self.pos[0], self.pos[1], self.depth]
-            self.target_rel = [self.rel_x, self.rel_y]
-            self.target_z = self.depth + self.rel_z
-            self.bearing = math.atan2(self.target_rel[1], self.target_rel[0])
-            self.prev_rpy = list(self.rpy); self.state = 'STAB'
-            self.get_logger().info(f"🎯 Цель: ΔX={self.target_rel[0]:.1f} ΔY={self.target_rel[1]:.1f} Z={self.target_z:+.2f}")
+            self.target_global = [self.raw_target_x, self.raw_target_y, self.raw_target_z]
+            self.prev_rpy = list(self.rpy)
+            self.prev_baro_z = self.baro_z
+            self.state = 'STAB'
+            print(f"\n🎯 Запуск Anti-Capsize системы v34.1:")
+            print(f"   Цель: X={self.target_global[0]:.2f} Y={self.target_global[1]:.2f} Z={self.target_global[2]:.2f}")
 
-        # Дистанция до цели
-        dx_rem = self.target_rel[0] - (self.pos[0] - self.start_pos[0])
-        dy_rem = self.target_rel[1] - (self.pos[1] - self.start_pos[1])
-        self.dist_to_target = math.hypot(dx_rem, dy_rem)
-        
-        # CTE
-        dx_total = self.target_rel[0]; dy_total = self.target_rel[1]
-        L_total = math.hypot(dx_total, dy_total)
-        dx_now = self.pos[0] - self.start_pos[0]
-        dy_now = self.pos[1] - self.start_pos[1]
-        if L_total > 0.1: self.cte = (dy_total * dx_now - dx_total * dy_now) / L_total
-        else: self.cte = 0.0
+        dx_rem = self.target_global[0] - self.pos[0]
+        dy_rem = self.target_global[1] - self.pos[1]
+        self.dist_2d = math.hypot(dx_rem, dy_rem)
+
+        if self.state == 'ORBIT':
+            angle_to_sub = math.atan2(self.pos[1] - self.target_global[1], self.pos[0] - self.target_global[0])
+            radius_error = self.dist_2d - ORBIT_RADIUS
+            correction_angle = max(-0.4, min(0.4, radius_error * 0.12))
+            self.bearing = angle_to_sub + math.pi/2 + correction_angle
+        else:
+            self.bearing = math.atan2(dy_rem, dx_rem)
 
     def loop(self):
-        if self.state not in ['STAB', 'NAV']: return
+        if self.state not in ['STAB', 'NAV', 'ORBIT', 'FINAL_LOCK']: return
         
-        # 🔹 ПИД ГЛУБИНЫ
-        depth_err = self.depth - self.target_z
-        if abs(depth_err) < 1.0:
-            self.depth_int = max(-self.INT_MAX_Z, min(self.INT_MAX_Z, self.depth_int + depth_err * self.dt))
-        else: self.depth_int = 0.0
-        d_depth = (self.depth - self.prev_depth) / self.dt
-        raw_h = DEPTH_SIGN * (self.Kp_z * depth_err + self.Ki_z * self.depth_int + self.Kd_z * d_depth)
-        rudder_h = max(-0.45, min(0.45, raw_h))
-        self.prev_depth = self.depth
+        # 🔹 ВЫЧИСЛЕНИЕ ВЫСОТЫ
+        z_err = self.pos[2] - self.target_global[2] 
+        dz_dt = (self.pos[2] - self.prev_baro_z) / self.dt
+        raw_h = -(self.Kp_z * z_err + self.Kd_z * dz_dt)
+        rudder_h = max(-0.22, min(0.22, raw_h)) 
+        self.prev_baro_z = self.pos[2]
 
-        # 🔹 ПИД КУРСА
+        # 🔹 ВЫЧИСЛЕНИЕ КУРСА
         yaw_err = math.atan2(math.sin(self.bearing - self.rpy[2]), math.cos(self.bearing - self.rpy[2]))
-        if abs(math.degrees(yaw_err)) < 2.0: yaw_err = 0.0
-        cte_correction = 0.3 * self.cte
-        total_yaw_err = yaw_err + cte_correction
+        if abs(math.degrees(yaw_err)) < 1.0: yaw_err = 0.0
         
-        if abs(total_yaw_err) < 0.005: self.yaw_int = 0.0
-        else: self.yaw_int = max(-self.INT_MAX_YAW, min(self.INT_MAX_YAW, self.yaw_int + total_yaw_err * self.dt))
         d_yaw = (self.rpy[2] - self.prev_rpy[2]) / self.dt
-        rudder_v = -(self.Kp_yaw * total_yaw_err + self.Ki_yaw * self.yaw_int + self.Kd_yaw * d_yaw)
-        rudder_v = max(-0.4, min(0.4, rudder_v))
+        rudder_v = (self.Kp_yaw * yaw_err + self.Kd_yaw * d_yaw)
+        rudder_v = max(-0.45, min(0.45, rudder_v))
 
-        # 🔹 КРЕН
+        # 🔹 МОЩНЫЙ КОНТУР СТАБИЛИЗАЦИИ КРЕНА
         roll_err = self.rpy[0]
         d_roll = (self.rpy[0] - self.prev_rpy[0]) / self.dt
         roll_pid = self.Kp_roll * roll_err + self.Kd_roll * d_roll
         
         cmd_hl = rudder_h - roll_pid - self.roll_bias
         cmd_hr = rudder_h + roll_pid + self.roll_bias
-        cmd_hl = max(-0.45, min(0.45, cmd_hl))
-        cmd_hr = max(-0.45, min(0.45, cmd_hr))
+        cmd_hl = max(-0.6, min(0.6, cmd_hl))
+        cmd_hr = max(-0.6, min(0.6, cmd_hr))
         self.prev_rpy = list(self.rpy)
         
         thrust = 0.0; cmd_lt = 0.0; cmd_rt = 0.0
 
-        # ================= STATE MACHINE =================
+        # ================= АВТОМАТ ТРАЕКТОРИЙ =================
         if self.state == 'STAB':
-            if abs(roll_err) < 0.2: self.stable_t += self.dt
+            if abs(roll_err) < 0.12: self.stable_t += self.dt
             else: self.stable_t = 0.0
-            if self.stable_t >= 1.5: 
-                self.state = 'NAV'; self.get_logger().info("🟢 NAV | Moving to target...")
-            cmd_hl = max(-0.3, min(0.3, -roll_pid - self.roll_bias))
-            cmd_hr = max(-0.3, min(0.3, roll_pid + self.roll_bias))
+            if self.stable_t >= 1.5: self.state = 'NAV'
+            cmd_hl = max(-0.15, min(0.15, -roll_pid - self.roll_bias))
+            cmd_hr = max(-0.15, min(0.15, roll_pid + self.roll_bias))
 
         elif self.state == 'NAV':
-            #  ПРОФИЛЬ СКОРОСТИ
-            target_speed = max(self.min_cruise_speed, min(self.max_cruise_speed, self.dist_to_target * 0.3))
-            
-            # 🛑 ТОРМОЖЕНИЕ
-            if self.vel > target_speed + self.brake_threshold:
-                thrust = 1.5  # Активное торможение
-            else:
-                thrust = -target_speed * 4.5  # Крейсерская тяга
+            target_speed = max(self.min_cruise_speed, min(self.max_cruise_speed, self.dist_2d * 0.35))
+            if self.vel > target_speed + self.brake_threshold: thrust = 0.8  
+            else: thrust = -target_speed * 3.3  
+              
+            # Проверка предиктивного входа (1.5n)
+            if self.dist_2d < PREDICTIVE_ZONE and abs(z_err) >= 1.5:
+                abs_dz = abs(dz_dt) if abs(dz_dt) > 0.05 else 0.05
+                time_to_climb = abs(z_err) / abs_dz
+                abs_vel = abs(self.vel) if abs(self.vel) > 0.1 else 0.1
+                time_to_target = self.dist_2d / abs_vel
                 
-            if abs(math.degrees(total_yaw_err)) > 3.0:
-                diff = self.K_diff * total_yaw_err
-                cmd_lt = thrust + diff; cmd_rt = thrust - diff
-            else: cmd_lt = thrust; cmd_rt = thrust
-            
-            if self.dist_to_target < 2.5:
+                if time_to_climb > time_to_target:
+                    self.state = 'ORBIT'
+                    sys.stdout.write(f"\n🔮 PREDICT | Начинаем контролируемое торможение перед орбитой...\n")
+                    sys.stdout.flush()
+
+            # Динамический дифференциал (зависит от скорости)
+            k_diff = self.K_diff_base * (1.0 + abs(self.vel))
+            diff = k_diff * yaw_err
+            cmd_lt = thrust + diff; cmd_rt = thrust - diff
+
+        elif self.state == 'ORBIT':
+            # 🔥 БЕЗОПАСНАЯ СКОРОСТЬ КРУЖЕНИЯ (Опора на воду)
+            # Держим 0.75 м/с, чтобы рули крена физически работали и держали лодку ровно
+            target_orbit_speed = 0.75 
+            if self.vel > target_orbit_speed + 0.1:
+                thrust = 1.0  # Легкое притормаживание без фанатизма
+            else:
+                thrust = -target_orbit_speed * 3.3
+
+            # Ограничиваем дифференциал моторов, чтобы не скручивать лодку на малом ходу
+            k_diff = 2.5  
+            diff = k_diff * yaw_err
+            cmd_lt = thrust + diff; cmd_rt = thrust - diff
+
+            # 🔥 АВАРИЙНЫЙ ПРЕДОХРАНИТЕЛЬ: Если крен ушел за 35 градусов, выключаем разворот!
+            if abs(math.degrees(roll_err)) > 35.0:
+                cmd_lt = thrust
+                cmd_rt = thrust
+                rudder_v = 0.0  # Ставим руль прямо, спасаем лодку от переворота
+
+            if abs(z_err) < 1.5:
+                self.state = 'FINAL_LOCK'
+                sys.stdout.write(f"\n🎯 FINAL | Высота зафиксирована стабильно. Выходим в центр...\n")
+                sys.stdout.flush()
+
+        elif self.state == 'FINAL_LOCK':
+            target_speed = max(self.min_cruise_speed, min(1.0, self.dist_2d * 0.4))
+            if self.vel > target_speed + self.brake_threshold: thrust = 0.2  
+            else: thrust = -target_speed * 3.3
+
+            diff = self.K_diff_base * yaw_err
+            cmd_lt = thrust + diff; cmd_rt = thrust - diff
+
+            if self.dist_2d < 2.0 and abs(z_err) < 1.5:
                 self.state = 'FINISH'
-                self.get_logger().info("🏁 FINISH")
                 self._pub(0,0,0,0,0)
-                print("\n✅ DONE")
-                rclpy.shutdown(); return
+                print(f"\n\r✅ МИССИЯ ЗАВЕРШЕНА | 1 ЭТАП ПОЛНОСТЬЮ ПОБЕЖДЕН!")
+                print(f"Финиш: X={self.pos[0]:.2f} Y={self.pos[1]:.2f} Z={self.pos[2]:.2f}")
+                raise SystemExit
 
         self._pub(cmd_lt, cmd_rt, rudder_v, cmd_hl, cmd_hr)
-        src = 'P' if self.use_pressure else 'O'
-        print(f"\r[{self.state:4}] Pos:[{self.pos[0]:+.1f}, {self.pos[1]:+.1f}, {self.depth:+.2f}] | "
-              f"Dist:{self.dist_to_target:.1f}m | V:{self.vel:+.2f} | Z_Err:{depth_err:+.2f} | "
-              f"H:{rudder_h:+.2f} V:{rudder_v:+.2f} [{src}]", end='', flush=True)
+        print(f"\r[{self.state:10}] Pos:[{self.pos[0]:+.1f}, {self.pos[1]:+.1f}, {self.pos[2]:+.2f}] | "
+              f"Dist2D:{self.dist_2d:.1f}m | V:{self.vel:+.2f} | Z_Err:{z_err:+.2f} | "
+              f"Roll:{math.degrees(roll_err):+.1f}°", end='', flush=True)
 
     def _pub(self, lt, rt, rv, hl, hr):
-        self.pub_lt.publish(Float64(data=float(lt))); self.pub_rt.publish(Float64(data=float(rt)))
-        self.pub_vert.publish(Float64(data=float(rv))); self.pub_hl.publish(Float64(data=float(hl))); self.pub_hr.publish(Float64(data=float(hr)))
+        self.pub_lt.publish(Float64(data=float(lt)))
+        self.pub_rt.publish(Float64(data=float(rt)))
+        self.pub_vert.publish(Float64(data=float(rv)))
+        self.pub_hl.publish(Float64(data=float(hl)))
+        self.pub_hr.publish(Float64(data=float(hr)))
 
     def run(self):
         try:
-            print("="*60 + "\n🚢 AUV v31.1 (Restored | Calibrated)\n" + "="*60)
-            try:
-                self.rel_x = float(input("📍 ΔX: ")); self.rel_y = float(input("📍 ΔY: ")); self.rel_z = float(input(" ΔZ: "))
-            except: self.rel_x=50.0; self.rel_y=0.0; self.rel_z=-5.0
+            print("="*60 + "\n🚢 AUV v34.1 (Anti-Capsize & Safe Orbit Profile)\n" + "="*60)
+            self.raw_target_x = float(input("📍 Абсолютный X цели: "))
+            self.raw_target_y = float(input("📍 Абсолютный Y цели: "))
+            self.raw_target_z = float(input("📍 Абсолютный Z цели: "))
             rclpy.spin(self)
-        except KeyboardInterrupt: print("\n🛑 Stop"); self._pub(0,0,0,0,0)
+        except (KeyboardInterrupt, SystemExit): 
+            self._pub(0,0,0,0,0)
 
 def main():
     rclpy.init(); node = AUVController()
