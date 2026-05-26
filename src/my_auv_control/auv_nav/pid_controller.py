@@ -29,7 +29,7 @@ class PIDController:
         roll_pid *= pitch_priority
         raw_hl = max(-0.95, min(0.95, target_rudder_h - roll_pid - ControlConfig.roll_bias))
         raw_hr = max(-0.95, min(0.95, target_rudder_h + roll_pid + ControlConfig.roll_bias))
-        self.curr_cmd_base = self.constrain_slew(self.curr_cmd_base, target_params['base_speed'], 15.0 if phase != 'HOVER_STAB' else 0.0, dt)
+        self.curr_cmd_base = self.constrain_slew(self.curr_cmd_base, target_params['base_speed'], 4.0 if phase != 'HOVER_STAB' else 0.0, dt)
         self.curr_rv = self.constrain_slew(self.curr_rv, target_rudder_v, ControlConfig.max_rudder_speed, dt)
         self.curr_hl = self.constrain_slew(self.curr_hl, raw_hl, ControlConfig.max_rudder_speed, dt)
         self.curr_hr = self.constrain_slew(self.curr_hr, raw_hr, ControlConfig.max_rudder_speed, dt)

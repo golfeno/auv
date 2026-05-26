@@ -7,7 +7,7 @@ package_name = 'my_auv_control'
 setup(
     name=package_name,
     version='0.1.0',
-    packages=['my_auv_control', 'auv_autopilot', 'auv_nav'],
+    packages=['my_auv_control',  'auv_nav'],
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
@@ -23,8 +23,7 @@ setup(
         'console_scripts': [
             'autopilot = auv_nav.autopilot_node:main',
             'fake_barometer = my_auv_control.fake_barometer:main',
-            # Если launch позже попросит mixer, раскомментируй строку ниже:
-            # 'mixer = my_auv_control.auv_control_mixer:main',
+            'mixer = my_auv_control.auv_control_mixer:main',
         ],
     },
 )

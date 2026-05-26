@@ -38,7 +38,7 @@ class ControlConfig:
     Kp_roll = 50.0; Kd_roll = 22.0
     roll_bias = 0.04
     max_rudder_speed = 2.4
-    max_cruise_speed = -35.0; min_cruise_speed = -12.0
+    max_cruise_speed = -5.0; min_cruise_speed = -1.0
     success_radius = 0.85
     altitude_breach_threshold = 1.7
     dt = 0.05
