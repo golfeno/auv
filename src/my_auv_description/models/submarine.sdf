@@ -28,7 +28,7 @@
           <xx>5.8</xx>
           <yy>116.0</yy>
           <zz>116.0</zz>
-          <pp>0</pp>
+          <pp>0.7</pp>
           <qq>3.7</qq>
           <rr>3.7</rr>
         </fluid_added_mass>
@@ -106,7 +106,7 @@
         <xyz>1 0 0</xyz>
         <use_parent_model_frame>1</use_parent_model_frame>
         <limit><lower>-1e12</lower><upper>1e12</upper></limit>
-        <dynamics><damping>0.1</damping></dynamics>
+        <dynamics><damping>0.5</damping></dynamics>
       </axis>
     </joint>
 
@@ -211,7 +211,7 @@
         <xyz>-1 0 0</xyz>
         <use_parent_model_frame>1</use_parent_model_frame>
         <limit><lower>-1e12</lower><upper>1e12</upper></limit>
-        <dynamics><damping>0.1</damping></dynamics>
+        <dynamics><damping>0.5</damping></dynamics>
       </axis>
     </joint>
 
@@ -453,27 +453,24 @@
     </plugin>
 
     <plugin filename="gz-sim-hydrodynamics-system" name="gz::sim::systems::Hydrodynamics">
-      <!-- Звено, к которому применяются силы (ваш корпус) -->
       <link_name>body</link_name>
 
-      <!-- Линейное и квадратичное сопротивление по осям X, Y, Z (поступательное движение) -->
-      <xU>-0.76</xU>         <!-- линейное сопротивление вперёд-назад -->
-      <xUabsU>-15.27</xUabsU> <!-- квадратичное сопротивление вперёд-назад -->
-      <yV>-11.11</yV>         <!-- линейное сопротивление вбок -->
-      <yVabsV>-222.22</yVabsV> <!-- квадратичное сопротивление вбок -->
-      <zW>-11.11</zW>         <!-- линейное сопротивление вверх-вниз -->
-      <zWabsW>-222.22</zWabsW> <!-- квадратичное сопротивление вверх-вниз -->
-
-      <!-- Вращательное сопротивление (демпфирование) для крена, тангажа и рыскания -->
-      <kP>-3.95</kP>          <!-- линейное сопротивление крену -->
-      <kPabsP>-79.01</kPabsP>  <!-- квадратичное сопротивление крену -->
-      <mQ>-3.95</mQ>          <!-- линейное сопротивление тангажу -->
-      <mQabsQ>-79.01</mQabsQ>  <!-- квадратичное сопротивление тангажу -->
-      <nR>-3.95</nR>          <!-- линейное сопротивление рысканию -->
-      <nRabsR>-79.01</nRabsR>  <!-- квадратичное сопротивление рысканию -->
-
-
-
+      <!-- Продольное (surge): R=0.167, S_front=0.087, Cd=0.82 + надстройки ×1.7 -->
+      <xU>-4.0</xU>
+      <xUabsU>-44.0</xUabsU>
+      <!-- Поперечное (sway): S_lat=0.444, Cd=1.1 + надстройки ×1.3 -->
+      <yV>-15.0</yV>
+      <yVabsV>-250.0</yVabsV>
+      <!-- Вертикальное (heave): аналогично sway -->
+      <zW>-15.0</zW>
+      <zWabsW>-250.0</zWabsW>
+      <!-- Вращательное демпфирование -->
+      <kP>-5.0</kP>
+      <kPabsP>-100.0</kPabsP>
+      <mQ>-5.0</mQ>
+      <mQabsQ>-100.0</mQabsQ>
+      <nR>-5.0</nR>
+      <nRabsR>-100.0</nRabsR>
     </plugin>
 
 
