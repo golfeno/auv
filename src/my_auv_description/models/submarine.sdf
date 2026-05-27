@@ -311,7 +311,7 @@
       <cda_stall>1.0</cda_stall>
       <alpha_stall>1.2</alpha_stall><a0>0</a0>
       <upward>0 1 0</upward><forward>0 0 1</forward>
-      <cp>0 0 0</cp>
+      <cp>-0.6666667 0.2833333 0</cp>
     </plugin>
 
     <!-- Горизонтальный левый руль -->
@@ -339,7 +339,7 @@
       <cda_stall>1.0</cda_stall>
       <alpha_stall>1.2</alpha_stall><a0>0</a0>
       <upward>0 1 0</upward><forward>0 0 1</forward>
-      <cp>0 0 0</cp>
+      <cp>-0.6666667 -0.2833333 0</cp>
     </plugin>
 
     <!-- Вертикальный руль -->
@@ -367,7 +367,7 @@
       <cda_stall>1.0</cda_stall>
       <alpha_stall>1.2</alpha_stall><a0>0</a0>
       <upward>0 0 1</upward><forward>0 1 0</forward>
-      <cp>0 0 0</cp>
+      <cp>-0.7666667 0 -0.2833333</cp>
     </plugin>
 
     <!-- ========================================== -->
